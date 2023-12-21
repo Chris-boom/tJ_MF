@@ -24,12 +24,15 @@ set(SRC_LIST main.cpp tJSBMF.cpp)
 # add_subdirectory(MathFunctions)
 
 # add executable
+set(JSONCPP_PREFIX "/opt/homebrew/Cellar/jsoncpp/1.9.5")
 # find_package(Eigen3 3.4 REQUIRED)
 find_package(GSL REQUIRED)
+# find_package(jsoncpp CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
-target_link_libraries(${PROJECT_NAME} PUBLIC GSL::gsl)
+link_directories(${JSONCPP_PREFIX}/lib)
+target_link_libraries(${PROJECT_NAME} PUBLIC GSL::gsl ${JSONCPP_PREFIX}/lib/libjsoncpp.dylib)
 
 # add the binary tree to the search path for include files
 # so that we will find HelloCMakeConfig.h
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_BINARY_DIR} ${GSL_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_BINARY_DIR} ${GSL_INCLUDE_DIRS} ${JSONCPP_PREFIX}/include)

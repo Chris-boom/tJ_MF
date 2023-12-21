@@ -1,2 +1,4 @@
 .vscode/
 build/
+ResultData/
+.DS_Store

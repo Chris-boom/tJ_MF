@@ -192,8 +192,8 @@ void tJSBMF::step_forward(){
     mu = mu_guess;
     B_new = 0;
     Delta_new = 0;
-    double Delta_y = 0;
-    double Delta_x = 0;
+    // double Delta_y = 0;
+    // double Delta_x = 0;
     double Delta_k, ek, Ek;
     for(int xi=-N/2; xi<N/2; xi++){
         for(int yi=-N/2; yi<N/2; yi++){
@@ -202,21 +202,21 @@ void tJSBMF::step_forward(){
             Ek = sqrt(pow(ek,2)+pow(Delta_k,2));
             B_new += 0.5*(0.5*(1+ek/Ek)*fF(Ek,T)+0.5*(1-ek/Ek)*(1-fF(Ek,T)))*
                 (cos(ki(xi))+cos(ki(yi)));
-            Delta_new += 0.5*abs(Delta_k)*( 1 - 2*fF(Ek,T) )/Ek*
+            Delta_new += 0.5*Delta_k*( 1 - 2*fF(Ek,T) )/Ek*
                 (cos(ki(xi)) + wf*cos(ki(yi)));
-            Delta_x += 0.5*abs(Delta_k)*( 1 - 2*fF(Ek,T) )/Ek*
-                2*cos(ki(xi));
-            Delta_y += 0.5*abs(Delta_k)*( 1 - 2*fF(Ek,T) )/Ek*
-                2*cos(ki(yi));
+            // Delta_x += 0.5*Delta_k*( 1 - 2*fF(Ek,T) )/Ek*
+            //     2*cos(ki(xi));
+            // Delta_y += 0.5*Delta_k*( 1 - 2*fF(Ek,T) )/Ek*
+            //     2*cos(ki(yi));
         }
     }
     B_new /= NN;
     Delta_new = Delta_new/NN*J;
-    Delta_y = Delta_y/NN*J;
-    Delta_x = Delta_x/NN*J;
-    std::cout<<"Delta_y="<<Delta_y<<" Delta_x="<<Delta_x<<std::endl;
+    // Delta_y = Delta_y/NN*J;
+    // Delta_x = Delta_x/NN*J;
+    // std::cout<<"Delta_y="<<Delta_y<<" Delta_x="<<Delta_x<<std::endl;
 }
-void tJSBMF::self_consistent(){
+void tJSBMF::self_consistent(int report_freq){
     //the err of every param must be less than its etol.
     //Remember to set the start state!
     int iter = 0;
@@ -235,11 +235,18 @@ void tJSBMF::self_consistent(){
             else status_MF = -2;
         }
         else status_MF = -3;
-        if(iter%1 == 0 || iter == 1){
+        if(report_freq!=0 && (iter%report_freq == 0 || iter == 1)){
             std::cout<<"step"<<iter<<"\th="<<h<<"\tB="<<B<<"\tDelta="<<Delta<<std::endl;
         }
         h = h_new*sfac + h*(1-sfac);
         B = B_new*sfac + B*(1-sfac);
         Delta = Delta_new*sfac + Delta*(1-sfac);
     } while (status_MF != 0 && iter < maxstep);
+}
+int tJSBMF::reset(){
+    //initialize the parameters
+    h = 0.1;
+    B = 1;
+    Delta = 1;
+    return 0;
 }
