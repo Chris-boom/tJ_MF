@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <gsl/gsl_roots.h>
@@ -28,7 +28,7 @@ tJSBMF::tJSBMF(double J, double x, double T, int N, char wave,
     lamb = 0;
     mu = 0;
 }
-double tJSBMF::fF(const double x, const double Temp){
+double tJSBMF::fF(const double x, const double Temp) const{
     //Fermi distribution function
     if(Temp == 0){
         if(x > 0){
@@ -45,7 +45,7 @@ double tJSBMF::fF(const double x, const double Temp){
         return 1./(exp(x/Temp)+1);
     }
 }
-double tJSBMF::fB(const double x, const double Temp){
+double tJSBMF::fB(const double x, const double Temp) const{
     //Boson distribution. x must be positive!!!
     if(x <= 0){
         std::cout<<"Error! Bose distribution undefined."<<std::endl;
@@ -58,7 +58,7 @@ double tJSBMF::fB(const double x, const double Temp){
         return 1./(exp(x/Temp)-1);
     }
 }
-double tJSBMF::holon_numb(double lamb){
+double tJSBMF::holon_numb(double lamb) const{
     //only when T!=0, or lamb must be the lowest energy level.
     double numholon = 0;
     if(T==0){
@@ -73,7 +73,7 @@ double tJSBMF::holon_numb(double lamb){
     numholon /= NN;
     return numholon;
 }
-double tJSBMF::spinon_numb(double mu){
+double tJSBMF::spinon_numb(double mu) const{
     //calculate the spinon number
     double numspinon = 0;
     double ek=0;
@@ -93,10 +93,15 @@ double tJSBMF::spinon_numb(double mu){
 void tJSBMF::step_forward(){
     //calculate the new parameters
     //First determine lambda and h
+    const gsl_root_fsolver_type *sol_type=gsl_root_fsolver_brent;
+    gsl_root_fsolver *sol=gsl_root_fsolver_alloc(sol_type);
+    gsl_function sol_F;
+    int status;
+    int iter;
     if(T == 0){
         //BEC
         lamb = -4*B;
-        h = x;
+        h_new = x;
     }
     else{
         double lamb_hi = -4*B;
@@ -105,24 +110,21 @@ void tJSBMF::step_forward(){
         if (xn <= x){
             //BEC
             lamb = -4*B;
-            h = (x - xn)*NN;
+            h_new = (x - xn)*NN;
             for(int xi=-N/2; xi<N/2; xi++){
                 for(int yi=-N/2; yi<N/2; yi++){
                     if( xi!=0 || yi!=0){
-                        h += fB(-2*B*(cos(ki(xi))+cos(ki(yi)))-lamb, T)
+                        h_new += fB(-2*B*(cos(ki(xi))+cos(ki(yi)))-lamb, T)
                             *(cos(ki(xi))+cos(ki(yi)))/2;
                     }
                 }
             }
-            h /= NN;
+            h_new /= NN;
         }
         else{
             while(holon_numb(lamb_lo)>=x){
                 lamb_lo -= 50;
             }
-            const gsl_root_fsolver_type *sol_type=gsl_root_fsolver_brent;
-            gsl_root_fsolver *sol=gsl_root_fsolver_alloc(sol_type);
-            gsl_function sol_F;
             //using lambdaFunction to establish F
             auto lambdaFunction = [](double lamb, void *params)->double{
                 tJSBMF* ptr_tJ = static_cast<tJSBMF*>(params);
@@ -133,9 +135,8 @@ void tJSBMF::step_forward(){
             gsl_root_fsolver_set(sol, &sol_F, lamb_lo, lamb_hi);
             
             //the equation solving process
-            int status;
-            int iter = 0;
             double lamb_guess;
+            iter = 0;
             do
             {
                 iter++;
@@ -147,16 +148,82 @@ void tJSBMF::step_forward(){
             } while (status == GSL_CONTINUE && iter < 1000);
             //calculate h
             lamb = lamb_guess;
-            h = 0;
+            h_new = 0;
             for(int xi=-N/2; xi<N/2; xi++){
                 for(int yi=-N/2; yi<N/2; yi++){
-                        h += fB(-2*B*(cos(ki(xi))+cos(ki(yi)))-lamb, T)
+                        h_new += fB(-2*B*(cos(ki(xi))+cos(ki(yi)))-lamb, T)
                             *(cos(ki(xi))+cos(ki(yi)))/2;
                 }
             }
-            h /= NN;
+            h_new /= NN;
         }
     }
     //Second determine mu and calculate B&Delta
-    
+    auto muFunction = [](double mu, void *params)->double{
+        tJSBMF *ptr_tJ = static_cast<tJSBMF*>(params);
+        return ptr_tJ->spinon_numb(mu)-(1-ptr_tJ->x);
+    };
+    sol_F.function = muFunction;
+    sol_F.params = this;
+    double mu_lo = -10;
+    double mu_hi = 10;
+    double mu_guess = 0;
+    while( (spinon_numb(mu_lo)-1+x)*(spinon_numb(mu_hi)-1+x)>=0 ){
+        mu_lo -= 100;
+        mu_hi += 100;
+    }
+    gsl_root_fsolver_set(sol, &sol_F, mu_lo, mu_hi);
+    iter = 0;
+    do{
+        iter++;
+        status = gsl_root_fsolver_iterate(sol);
+        mu_guess = gsl_root_fsolver_root(sol);
+        mu_lo = gsl_root_fsolver_x_lower(sol);
+        mu_hi = gsl_root_fsolver_x_upper(sol);
+        status = gsl_root_test_interval(mu_lo, mu_hi, 1e-6, 1e-3);
+    }while(status == GSL_CONTINUE && iter < 1000);
+    //calculate B&Delta
+    mu = mu_guess;
+    B_new = 0;
+    Delta_new = 0;
+    double Delta_k, ek, Ek;
+    for(int xi=-N/2; xi<N/2; xi++){
+        for(int yi=-N/2; yi<N/2; yi++){
+            Delta_k = Delta*( cos(ki(xi))+wf*cos(ki(yi)) );
+            ek = -2*(h+J*B/2)*(cos(ki(xi)) + cos(ki(yi)))-mu;
+            Ek = sqrt(pow(ek,2)+pow(Delta_k,2));
+            B_new += 0.5*(0.5*(1+ek/Ek)*fF(Ek,T)+0.5*(1-ek/Ek)*(1-fF(Ek,T)))*
+                (cos(ki(xi))+cos(ki(yi)));
+            Delta_new += 0.5*abs(Delta_k)*( 1 - 2*fF(Ek,T) )/Ek*
+                (cos(ki(xi)) + wf*cos(ki(yi)));
+        }
+    }
+    B_new /= NN;
+    Delta_new *= J/NN;
+}
+void tJSBMF::self_consistent(){
+    //the err of every param must be less than its etol.
+    //Remember to set the start state!
+    int iter = 0;
+    double err_array[3] = {0, 0, 0};
+    double errtol_array[3] = {0, 0, 0};
+    int status_MF = 1;
+    do
+    {
+        iter++;
+        step_forward();
+        if(abs(h_new-h)<abs(h)*rtol+atol){
+            if(abs(B_new-B)<abs(B)*rtol+atol){
+                if(abs(Delta_new-Delta)<abs(Delta)*rtol+atol){
+                    status_MF = 0;
+                }
+                else status_MF = -1;
+            }
+            else status_MF = -2;
+        }
+        else status_MF = -3;
+        if(iter%3 == 0 || iter == 1){
+            std::cout<<"step"<<iter<<"\th="<<h<<"\tB="<<B<<"\tDelta="<<Delta<<std::endl;
+        }
+    } while (status_MF != 0 && iter < maxstep);
 }
