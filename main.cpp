@@ -15,11 +15,18 @@ int main(){
     int N = 100;
     double T = 0;
     char wave = 'd';
-    std::string path = "ResultData/1st.json";
+    std::string path = "ResultData/d_wave.json";
     double atol = 1e-6;
     double rtol = 1e-3;
     int maxstep = 1000;
     tJSBMF MFSolver(0, 0, T, N, wave, maxstep, atol, rtol);
+    //test
+    // MFSolver.x = 0.41;
+    // MFSolver.J = 0.46;
+    // MFSolver.reset();
+    // MFSolver.self_consistent();
+    // std::cout<<MFSolver.x<<" "<<MFSolver.J<<" "<<std::fixed<<std::setprecision(10)<<MFSolver.Delta<<std::endl;
+
     std::vector<double> x_vec = vector_range(0.01, 0.5, 0.01);
     std::vector<double> J_vec = vector_range(0.01, 0.5, 0.01);
     std::vector<std::vector<double> > Delta_vec;
@@ -42,14 +49,17 @@ int main(){
     jsondata["wave"] = std::string(1, wave);
     jsondata["atol"] = atol;
     jsondata["rtol"] = rtol;
-    Json::Value xJson, JJson, DeltaJson, DeltarowJson;
+    Json::Value xJson, JJson, DeltaJson;
     for(int i=0; i<x_vec.size(); i++){
+        Json::Value DeltaJsonRow;
         xJson.append(x_vec.at(i));
         for(int j=0; j<J_vec.size(); j++){
-            JJson.append(J_vec.at(j));
-            DeltarowJson.append(Delta_vec.at(i).at(j));
+            if(i==0){
+                JJson.append(J_vec.at(j));
+            }
+            DeltaJsonRow.append(Delta_vec.at(i).at(j));
         }
-        DeltaJson.append(DeltarowJson);
+        DeltaJson.append(DeltaJsonRow);
     }
     jsondata["xList"] = xJson;
     jsondata["JList"] = JJson;
