@@ -27,6 +27,7 @@ tJSBMF::tJSBMF(double J, double x, double T, int N, char wave,
     B = 0;
     lamb = 0;
     mu = 0;
+    std::cout<<"Parameters: J="<<J<<" x="<<x<<" T="<<T<<" N="<<N<<" wave="<<wave<<std::endl;
 }
 double tJSBMF::fF(const double x, const double Temp) const{
     //Fermi distribution function
@@ -67,8 +68,13 @@ double tJSBMF::holon_numb(double lamb) const{
     }
     for(int xi=-N/2; xi<N/2; xi++){
         for(int yi=-N/2; yi<N/2; yi++){
-            numholon += fB(-2*B*(cos(ki(xi))+cos(ki(yi)))-lamb, T);
+            if(xi!=0 || yi!=0){
+                numholon += fB(-2*B*(cos(ki(xi))+cos(ki(yi)))-lamb, T);
+            }
         }
+    }
+    if(lamb < -4*B){
+        numholon += fB(-4*B-lamb, T);
     }
     numholon /= NN;
     return numholon;
@@ -87,7 +93,7 @@ double tJSBMF::spinon_numb(double mu) const{
             numspinon += 0.5*(1+ek/Ek)*fF(Ek,T)+0.5*(1-ek/Ek)*(1-fF(Ek,T));
         }
     }
-    numspinon *= 2/NN;
+    numspinon = numspinon/NN*2;
     return numspinon;
 }
 void tJSBMF::step_forward(){
@@ -168,7 +174,7 @@ void tJSBMF::step_forward(){
     double mu_lo = -10;
     double mu_hi = 10;
     double mu_guess = 0;
-    while( (spinon_numb(mu_lo)-1+x)*(spinon_numb(mu_hi)-1+x)>=0 ){
+    while( (spinon_numb(mu_lo)-1+x)*(spinon_numb(mu_hi)-1+x)>=0){
         mu_lo -= 100;
         mu_hi += 100;
     }
@@ -186,6 +192,8 @@ void tJSBMF::step_forward(){
     mu = mu_guess;
     B_new = 0;
     Delta_new = 0;
+    double Delta_y = 0;
+    double Delta_x = 0;
     double Delta_k, ek, Ek;
     for(int xi=-N/2; xi<N/2; xi++){
         for(int yi=-N/2; yi<N/2; yi++){
@@ -196,17 +204,22 @@ void tJSBMF::step_forward(){
                 (cos(ki(xi))+cos(ki(yi)));
             Delta_new += 0.5*abs(Delta_k)*( 1 - 2*fF(Ek,T) )/Ek*
                 (cos(ki(xi)) + wf*cos(ki(yi)));
+            Delta_x += 0.5*abs(Delta_k)*( 1 - 2*fF(Ek,T) )/Ek*
+                2*cos(ki(xi));
+            Delta_y += 0.5*abs(Delta_k)*( 1 - 2*fF(Ek,T) )/Ek*
+                2*cos(ki(yi));
         }
     }
     B_new /= NN;
-    Delta_new *= J/NN;
+    Delta_new = Delta_new/NN*J;
+    Delta_y = Delta_y/NN*J;
+    Delta_x = Delta_x/NN*J;
+    std::cout<<"Delta_y="<<Delta_y<<" Delta_x="<<Delta_x<<std::endl;
 }
 void tJSBMF::self_consistent(){
     //the err of every param must be less than its etol.
     //Remember to set the start state!
     int iter = 0;
-    double err_array[3] = {0, 0, 0};
-    double errtol_array[3] = {0, 0, 0};
     int status_MF = 1;
     do
     {
@@ -222,8 +235,11 @@ void tJSBMF::self_consistent(){
             else status_MF = -2;
         }
         else status_MF = -3;
-        if(iter%3 == 0 || iter == 1){
+        if(iter%1 == 0 || iter == 1){
             std::cout<<"step"<<iter<<"\th="<<h<<"\tB="<<B<<"\tDelta="<<Delta<<std::endl;
         }
+        h = h_new*sfac + h*(1-sfac);
+        B = B_new*sfac + B*(1-sfac);
+        Delta = Delta_new*sfac + Delta*(1-sfac);
     } while (status_MF != 0 && iter < maxstep);
 }

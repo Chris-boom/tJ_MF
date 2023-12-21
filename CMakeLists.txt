@@ -24,12 +24,12 @@ set(SRC_LIST main.cpp tJSBMF.cpp)
 # add_subdirectory(MathFunctions)
 
 # add executable
-find_package(Eigen3 3.4 REQUIRED)
+# find_package(Eigen3 3.4 REQUIRED)
 find_package(GSL REQUIRED)
 
 add_executable(${PROJECT_NAME} ${SRC_LIST})
-target_link_libraries(${PROJECT_NAME} PUBLIC Eigen3::Eigen GSL::gsl)
+target_link_libraries(${PROJECT_NAME} PUBLIC GSL::gsl)
 
 # add the binary tree to the search path for include files
 # so that we will find HelloCMakeConfig.h
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_BINARY_DIR} ${EIGEN3_INCLUDE_DIRS} ${GSL_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_BINARY_DIR} ${GSL_INCLUDE_DIRS})
