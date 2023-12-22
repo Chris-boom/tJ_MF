@@ -14,8 +14,8 @@ std::vector<datatype> vector_range(datatype start, datatype stop, datatype step)
 int main(){
     int N = 100;
     double T = 0;
-    char wave = 'd';
-    std::string path = "ResultData/d_wave.json";
+    char wave = 's';
+    std::string path = "ResultData/s_wave.json";
     double atol = 1e-6;
     double rtol = 1e-3;
     int maxstep = 1000;
