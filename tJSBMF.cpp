@@ -89,7 +89,7 @@ double tJSBMF::spinon_numb(double mu) const{
     for(int xi=-N/2; xi<N/2; xi++){
         for(int yi=-N/2; yi<N/2; yi++){
             Delta_k = Delta*( cos(ki(xi))+wf*cos(ki(yi)) );
-            ek = -2*(h+J*B/2)*(cos(ki(xi)) + cos(ki(yi)))-mu;
+            ek = -2*(h+J*B)*(cos(ki(xi)) + cos(ki(yi)))-mu;
             Ek = sqrt(pow(ek,2)+pow(Delta_k,2));
             numspinon += 0.5*(1+ek/Ek)*fF(Ek,T)+0.5*(1-ek/Ek)*(1-fF(Ek,T));
         }
@@ -202,7 +202,7 @@ void tJSBMF::step_forward(){
     for(int xi=-N/2; xi<N/2; xi++){
         for(int yi=-N/2; yi<N/2; yi++){
             Delta_k = Delta*( cos(ki(xi))+wf*cos(ki(yi)) );
-            ek = -2*(h+J*B/2)*(cos(ki(xi)) + cos(ki(yi)))-mu;
+            ek = -2*(h+J*B)*(cos(ki(xi)) + cos(ki(yi)))-mu;
             Ek = sqrt(pow(ek,2)+pow(Delta_k,2));
             B_new += 0.5*(0.5*(1+ek/Ek)*fF(Ek,T)+0.5*(1-ek/Ek)*(1-fF(Ek,T)))*
                 (cos(ki(xi))+cos(ki(yi)));

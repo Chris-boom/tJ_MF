@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 
-file_path = "ResultData/xJBd_wave_N200.json"
+file_path = "ResultData/xJBd_wave_revised.json"
 with open(file_path, 'r') as fi:
     data = json.load(fi)
 
@@ -66,7 +66,7 @@ def JT_plot(data):
     plt.title("d-wave")
     plt.show()
 
-# JT_plot(data)
+
 xList = np.array(data["xList"])
 JList = np.array(data["JList"])
 DeltaList = np.array(data["DeltaList"], dtype=float)
@@ -74,9 +74,12 @@ DeltaSCList = np.array(data["DeltaSCList"])
 BList = np.array(data["BList"], dtype=float)
 fig = plt.figure()
 ax = fig.gca()
-ax.plot(xList, DeltaList[:,40])
-ax.plot(xList, BList[:,40]*0.40*2)
-ax.plot(xList, DeltaSCList[:,40])
-# ax.set_xbound(0, 0.4)
-print(JList[40])
+ax.plot(xList, DeltaList[:,33],label=r"$\Delta_{RVB}$")
+ax.plot(xList, BList[:,33]*JList[33]*2, label=r"$B=<b_i^{\dagger}b_{i+x}>$")
+ax.plot(xList, DeltaSCList[:,33], label="$\Delta_{SC}$")
+ax.legend()
+ax.set_xlabel("x(dopping)")
+ax.set_ylabel("(in the unit of t)")
+
+print(JList[33])
 plt.show()

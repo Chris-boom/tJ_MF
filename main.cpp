@@ -137,9 +137,9 @@ int xT_phasediagram(double J){
     return 0;
 }
 int xJ_phasediagram(double T){
-    int N = 200;
+    int N = 100;
     char wave = 'd';
-    std::string path = "ResultData/xJBd_wave_N200.json";
+    std::string path = "ResultData/xJBd_wave_revised.json";
     double atol = 1e-6;
     double rtol = 1e-3;
     int maxstep = 1000;
