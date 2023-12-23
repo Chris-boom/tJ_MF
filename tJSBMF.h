@@ -10,6 +10,7 @@ public:
     void self_consistent(int report_freq = 0);
     double holon_numb(double lamb) const;
     double spinon_numb(double mu) const;
+    double DeltaSC();
     int reset();
     inline double ki(int i) const{
         return 2*M_PI*i/N;
@@ -19,6 +20,7 @@ public:
     char wave;
     double wf;
     double Delta, h, B, lamb, mu;
+    double x0;
 private:
     double fF(const double x, const double Temp) const;
     double fB(const double x, const double Temp) const;

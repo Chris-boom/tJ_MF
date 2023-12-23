@@ -27,6 +27,7 @@ tJSBMF::tJSBMF(double J, double x, double T, int N, char wave,
     B = 0;
     lamb = 0;
     mu = 0;
+    x0 = 0;
     std::cout<<"Parameters: J="<<J<<" x="<<x<<" T="<<T<<" N="<<N<<" wave="<<wave<<std::endl;
 }
 double tJSBMF::fF(const double x, const double Temp) const{
@@ -108,6 +109,7 @@ void tJSBMF::step_forward(){
         //BEC
         lamb = -4*B;
         h_new = x;
+        x0 = x;
     }
     else{
         double lamb_hi = -4*B;
@@ -126,6 +128,7 @@ void tJSBMF::step_forward(){
                 }
             }
             h_new /= NN;
+            x0 = x - xn;
         }
         else{
             while(holon_numb(lamb_lo)>=x){
@@ -162,6 +165,7 @@ void tJSBMF::step_forward(){
                 }
             }
             h_new /= NN;
+            x0 = 0;
         }
     }
     //Second determine mu and calculate B&Delta
@@ -249,4 +253,8 @@ int tJSBMF::reset(){
     B = 1;
     Delta = 1;
     return 0;
+}
+double tJSBMF::DeltaSC(){
+    double DeltaSC = Delta*x0;
+    return DeltaSC;
 }
