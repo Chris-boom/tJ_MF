@@ -8,8 +8,9 @@ We have define t=1. J is antiferromagnetic coupling, x is hole dopping, N*N is t
 
 ## output
 
-Delta is the RVB parameter; B is the hopping parameter defined as $$B = \frac{1}{2}\Sum_{\sigma}\langle f_{i,\sigma}^{\dagger}f_{i+x,\sigma} \rangle$$; h is the boson hopping parameter defined as $$h = \langle b_{i}^{\dagger}b_{i+x} \rangle$$; DeltaSC is the BCS superconductor parameter.
+Delta is the RVB parameter; B is the hopping parameter defined as $$B = \frac{1}{2}\sum_{\sigma}\langle f_{i,\sigma}^{\dagger}f_{i+x,\sigma} \rangle$$; h is the boson hopping parameter defined as $$h = \langle b_{i}^{\dagger}b_{i+x} \rangle$$; DeltaSC is the BCS superconductor parameter.
 
 ## others
+
 The tJSBMF_Plot.py and main.cpp files are not important. You can rewrite it as you wish.
 CMakeList.txt should be rewrite to fit your environment.
