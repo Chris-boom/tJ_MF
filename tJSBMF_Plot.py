@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import json
 
-file_path = "ResultData/xJBd_wave_revised.json"
+file_path = "ResultData/xJ_swave_N=100.json"
 with open(file_path, 'r') as fi:
     data = json.load(fi)
 
@@ -15,6 +15,7 @@ def xJ_plot(data):
     xList = np.array(data["xList"])
     JList = np.array(data["JList"])
     DeltaList = np.array(data["DeltaList"], dtype=float)
+    DeltaSCList = np.array(data["DeltaSCList"])
     # print(xList[40], JList[45], DeltaList[40,45])
 
     #plot
@@ -67,21 +68,22 @@ def JT_plot(data):
     plt.show()
 
 
-xList = np.array(data["xList"])
-JList = np.array(data["JList"])
-DeltaList = np.array(data["DeltaList"], dtype=float)
-DeltaSCList = np.array(data["DeltaSCList"])
-BList = np.array(data["BList"], dtype=float)
-fig = plt.figure()
-ax = fig.gca()
-ax.plot(xList, DeltaList[:,33],label=r"$\Delta_{RVB}$")
-ax.plot(xList, BList[:,33]*JList[33]*2,
-        label=r"$B=\langle f_{i\sigma}^{\dagger}f_{i+x,\sigma}\rangle$")
-ax.plot(xList, DeltaSCList[:,33], label="$\Delta_{SC}$")
-ax.legend()
-ax.set_xlabel("x(dopping)")
-ax.set_ylabel("(in the unit of t)")
-ax.set_xbound([0, 0.5])
+# xList = np.array(data["xList"])
+# JList = np.array(data["JList"])
+# DeltaList = np.array(data["DeltaList"], dtype=float)
+# DeltaSCList = np.array(data["DeltaSCList"])
+# BList = np.array(data["BList"], dtype=float)
+# fig = plt.figure()
+# ax = fig.gca()
+# ax.plot(xList, DeltaList[:,0],label=r"$\Delta_{RVB}$")
+# ax.plot(xList, BList[:,0]*JList[0]*2,
+#         label=r"$B=\langle f_{i\sigma}^{\dagger}f_{i+x,\sigma}\rangle$")
+# ax.plot(xList, DeltaSCList[:,0], label="$\Delta_{SC}$")
+# ax.legend()
+# ax.set_xlabel("x(dopping)")
+# ax.set_ylabel("(in the unit of t)")
+# ax.set_xbound([0, 0.5])
 
-print(JList[33])
+# print(JList[0])
+xJ_plot(data)
 plt.show()

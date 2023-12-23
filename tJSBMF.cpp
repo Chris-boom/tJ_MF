@@ -91,7 +91,12 @@ double tJSBMF::spinon_numb(double mu) const{
             Delta_k = Delta*( cos(ki(xi))+wf*cos(ki(yi)) );
             ek = -2*(h+J*B)*(cos(ki(xi)) + cos(ki(yi)))-mu;
             Ek = sqrt(pow(ek,2)+pow(Delta_k,2));
-            numspinon += 0.5*(1+ek/Ek)*fF(Ek,T)+0.5*(1-ek/Ek)*(1-fF(Ek,T));
+            if(Ek != 0){
+                numspinon += 0.5*(1+ek/Ek)*fF(Ek,T)+0.5*(1-ek/Ek)*(1-fF(Ek,T));
+            }
+            else{
+                numspinon += fF(ek,T);
+            }
         }
     }
     numspinon = numspinon/NN*2;
@@ -153,7 +158,7 @@ void tJSBMF::step_forward(){
                 lamb_guess = gsl_root_fsolver_root(sol);
                 lamb_lo = gsl_root_fsolver_x_lower(sol);
                 lamb_hi = gsl_root_fsolver_x_upper(sol);
-                status = gsl_root_test_interval(lamb_lo,lamb_hi, 1e-6, 1e-3);
+                status = gsl_root_test_interval(lamb_lo,lamb_hi, atol, rtol);
             } while (status == GSL_CONTINUE && iter < 1000);
             //calculate h
             lamb = lamb_guess;
@@ -190,7 +195,7 @@ void tJSBMF::step_forward(){
         mu_guess = gsl_root_fsolver_root(sol);
         mu_lo = gsl_root_fsolver_x_lower(sol);
         mu_hi = gsl_root_fsolver_x_upper(sol);
-        status = gsl_root_test_interval(mu_lo, mu_hi, 1e-6, 1e-3);
+        status = gsl_root_test_interval(mu_lo, mu_hi, atol, rtol);
     }while(status == GSL_CONTINUE && iter < 1000);
     //calculate B&Delta
     mu = mu_guess;

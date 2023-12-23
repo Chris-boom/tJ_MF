@@ -138,8 +138,8 @@ int xT_phasediagram(double J){
 }
 int xJ_phasediagram(double T){
     int N = 100;
-    char wave = 'd';
-    std::string path = "ResultData/xJBd_wave_revised.json";
+    char wave = 's';
+    std::string path = "ResultData/xJ_swave_N=100.json";
     double atol = 1e-6;
     double rtol = 1e-3;
     int maxstep = 1000;
@@ -151,8 +151,9 @@ int xJ_phasediagram(double T){
     // MFSolver.self_consistent();
     // std::cout<<MFSolver.x<<" "<<MFSolver.J<<" "<<std::fixed<<std::setprecision(10)<<MFSolver.Delta<<std::endl;
 
-    std::vector<double> x_vec = vector_range(0., 0.5, 0.01);
-    std::vector<double> J_vec = vector_range(0., 0.5, 0.01);
+    std::vector<double> x_vec = vector_range(0., 0.5, 0.02);
+    // std::vector<double> J_vec = vector_range(0., 0.5, 0.01);
+    std::vector<double> J_vec = vector_range(0., 0.4, 0.02);
     std::vector<std::vector<double> > Delta_vec, B_vec, DeltaSC_vec;
     for(int i=0; i<x_vec.size(); i++){
         std::vector<double> Delta_row, B_row, DeltaSC_row;
@@ -160,7 +161,7 @@ int xJ_phasediagram(double T){
             MFSolver.x = x_vec.at(i);
             MFSolver.J = J_vec.at(j);
             MFSolver.reset();
-            MFSolver.self_consistent();
+            MFSolver.self_consistent(50);
             Delta_row.push_back(MFSolver.Delta);
             B_row.push_back(MFSolver.B);
             DeltaSC_row.push_back(MFSolver.DeltaSC());
@@ -170,7 +171,7 @@ int xJ_phasediagram(double T){
         DeltaSC_vec.push_back(DeltaSC_row);
     }
     //output the datafile
-    std::cout<<"Start to write the json file!"<<std::endl;
+    std::cout<<"Start to write the json file! "<<path<<std::endl;
     Json::Value jsondata;
     jsondata["N"] = N;
     jsondata["T"] = T;
